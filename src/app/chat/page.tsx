@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import ChatHeader from '@/components/chat/ChatHeader'
 import ChatMessages from '@/components/chat/ChatMessages'
 import ChatInput from '@/components/chat/ChatInput'
-import { gerarRespostaDaIA } from '@/lib/ollamaClient'
 
 type Message = {
   sender: 'user' | 'ai'
@@ -22,7 +21,6 @@ export default function ChatPage() {
 
     setUid(localUid)
 
-    // Buscar histórico
     fetch(`/api/history?uid=${localUid}`)
       .then(res => res.json())
       .then(data => {
@@ -51,20 +49,25 @@ export default function ChatPage() {
   const handleSend = async (text: string) => {
     if (!uid || credits <= 0) return
 
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const userMsg: Message = { sender: 'user', text, timestamp: time }
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const userMsg: Message = { sender: 'user', text, timestamp }
 
-    // Mostrar mensagem do usuário imediatamente
     setMessages((prev) => [...prev, userMsg])
-
-    // Atualizar créditos localmente
     setCredits((prev) => parseFloat((prev - 0.05).toFixed(2)))
-
-    // Atualizar créditos no Firestore
     await atualizarCredito(uid, 0.05)
 
-    // Gerar resposta da IA
-    const aiText = await gerarRespostaDaIA(text)
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'mistral',
+        prompt: text,
+        stream: false,
+      }),
+    })
+
+    const data = await res.json()
+    const aiText = data?.response || '❌ Erro: resposta vazia da IA.'
 
     const aiMsg: Message = {
       sender: 'ai',
@@ -72,9 +75,11 @@ export default function ChatPage() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
 
-    const newMessages = [...messages, userMsg, aiMsg]
-    setMessages(newMessages)
-    await salvarHistorico(uid, newMessages)
+    setMessages((prev) => {
+      const atualizadas = [...prev, aiMsg]
+      salvarHistorico(uid, atualizadas)
+      return atualizadas
+    })
   }
 
   const salvarHistorico = async (uid: string, messages: Message[]) => {
@@ -105,7 +110,7 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen bg-gray-100">
       <ChatHeader />
       <ChatMessages messages={messages} />
-      <ChatInput onResponse={handleSend} credits={credits} />
+      <ChatInput onSend={handleSend} credits={credits} />
     </div>
   )
 }
