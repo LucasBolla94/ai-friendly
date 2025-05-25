@@ -22,6 +22,7 @@ export default function ChatPage() {
 
     setUid(localUid)
 
+    // Buscar histórico
     fetch(`/api/history?uid=${localUid}`)
       .then(res => res.json())
       .then(data => {
@@ -48,15 +49,21 @@ export default function ChatPage() {
   }, [])
 
   const handleSend = async (text: string) => {
-    if (!uid) return
+    if (!uid || credits <= 0) return
 
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     const userMsg: Message = { sender: 'user', text, timestamp: time }
 
+    // Mostrar mensagem do usuário imediatamente
     setMessages((prev) => [...prev, userMsg])
-    setCredits((prev) => prev - 1)
 
-    // Chamar IA real
+    // Atualizar créditos localmente
+    setCredits((prev) => parseFloat((prev - 0.05).toFixed(2)))
+
+    // Atualizar créditos no Firestore
+    await atualizarCredito(uid, 0.05)
+
+    // Gerar resposta da IA
     const aiText = await gerarRespostaDaIA(text)
 
     const aiMsg: Message = {
@@ -82,11 +89,23 @@ export default function ChatPage() {
     }
   }
 
+  const atualizarCredito = async (uid: string, valor: number) => {
+    try {
+      await fetch('/api/credit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, debito: valor }),
+      })
+    } catch (err) {
+      console.error('Erro ao atualizar crédito:', err)
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <ChatHeader />
       <ChatMessages messages={messages} />
-      <ChatInput onSend={handleSend} credits={credits} />
+      <ChatInput onResponse={handleSend} credits={credits} />
     </div>
   )
 }
