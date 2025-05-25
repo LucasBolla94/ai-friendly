@@ -1,0 +1,57 @@
+[
+  {
+    "sender": "ai",
+    "text": "Senti sua falta! Quer conversar um pouco?",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "user",
+    "text": "asdasdas",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "ai",
+    "text": "Quer me contar mais sobre isso?",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "user",
+    "text": "asdasdasd",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "ai",
+    "text": "Isso parece importante pra você.",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "user",
+    "text": "sdasdasd",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "ai",
+    "text": "Isso parece importante pra você.",
+    "timestamp": "00:01"
+  },
+  {
+    "sender": "user",
+    "text": "oi tudo beem",
+    "timestamp": "00:02"
+  },
+  {
+    "sender": "ai",
+    "text": "Quer me contar mais sobre isso?",
+    "timestamp": "00:02"
+  },
+  {
+    "sender": "user",
+    "text": "adad",
+    "timestamp": "00:04"
+  },
+  {
+    "sender": "ai",
+    "text": "[Erro ao conectar com a IA]",
+    "timestamp": "00:04"
+  }
+]
