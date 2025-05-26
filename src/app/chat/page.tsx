@@ -16,6 +16,7 @@ export default function ChatPage() {
   const [uid, setUid] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [credits, setCredits] = useState(0)
+  const [loading, setLoading] = useState(false)
 
   const fetchCredits = async (userId: string) => {
     try {
@@ -63,6 +64,8 @@ export default function ChatPage() {
   const handleSend = async (text: string) => {
     if (!uid || credits <= 0) return
 
+    setLoading(true)
+
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     const userMsg: Message = { sender: 'user', text, timestamp }
 
@@ -93,9 +96,9 @@ export default function ChatPage() {
     const atualizadas = [...messages, userMsg, aiMsg]
     setMessages(atualizadas)
     salvarHistorico(uid, atualizadas)
-
-    // Atualizar crédito após resposta
     fetchCredits(uid)
+
+    setLoading(false)
   }
 
   const salvarHistorico = async (uid: string, messages: Message[]) => {
@@ -125,8 +128,8 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <ChatHeader aiName="Auren" credits={credits} />
-      <ChatMessages messages={messages} />
-      <ChatInput onSend={handleSend} credits={credits} />
+      <ChatMessages messages={messages} loading={loading} />
+      <ChatInput onSend={handleSend} credits={credits} loading={loading} />
     </div>
   )
 }
